@@ -1,6 +1,6 @@
 from langchain.schema import SystemMessage, HumanMessage
 from open_ai_client import chat
-from clasifier import CodeClasifier
+from descriptors.clasifier import CodeClasifier
 
 
 def get_file_data(file_path):
@@ -16,6 +16,4 @@ def get_code_explanation(code):
     ]
     llm = chat.with_structured_output(schema=CodeClasifier)
     return  llm.invoke(messages)
-
-print(get_code_explanation("model_example.py"))
 

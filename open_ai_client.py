@@ -1,7 +1,4 @@
 from langchain_openai import ChatOpenAI
-from os import environ
+from env_variables import Envs
 
-
-open_ai_key = environ.get("OPEN_API_KEY")
-
-chat = ChatOpenAI(api_key=open_ai_key)
+chat = ChatOpenAI(api_key=Envs.OPEN_AI_API_KEY, model_name="gpt-3.5-turbo")

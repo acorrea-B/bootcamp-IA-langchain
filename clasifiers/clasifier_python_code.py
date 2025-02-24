@@ -1,7 +1,7 @@
 from langchain_core.pydantic_v1 import BaseModel, Field
 
 
-class CodeClasifier(BaseModel):
+class CodeClasifierPythonFile(BaseModel):
     """
     A model for classifying code snippets.
     """
