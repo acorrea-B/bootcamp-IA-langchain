@@ -1,11 +1,28 @@
-import requests
 from github import Auth, Github
 from env_variables import Envs
+from langchain_core.documents import Document
+from clasifiers.classifier_metaadata import CodeMetadata
+
 
 from langchain.document_loaders import GithubFileLoader
 
 
 class Loader(GithubFileLoader):
+
+    def lazy_load(self):
+        files = self.get_file_paths()
+        for file in files:
+            content = self.get_file_content_by_path(file["path"])
+            if content == "":
+                continue
+
+            metadata = {
+                "path": file["path"],
+                "sha": file["sha"],
+                "source": f"{self.github_api_url}/{self.repo}/{file['type']}/"
+                f"{self.branch}/{file['path']}",
+            }
+            yield Document(page_content=content, metadata=metadata)
 
     def get_file_content_by_path(self, path: str) -> str:
 
