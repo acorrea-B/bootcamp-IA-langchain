@@ -4,6 +4,7 @@ from chroma_manager import vectorstore
 
 document_split = GitHubPI().get_repository_contents(Envs.REPOSITORY_NAME)
 
+
 vectorstore.add_documents(
     documents=document_split,
 )

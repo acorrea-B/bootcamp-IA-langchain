@@ -1,10 +1,11 @@
 from github import Auth, Github
 from env_variables import Envs
 from langchain_core.documents import Document
-from clasifiers.classifier_metaadata import CodeMetadata
-
+from descriptors.describe_model import DescriptionModel
 
 from langchain.document_loaders import GithubFileLoader
+
+model_descriptor = DescriptionModel()
 
 
 class Loader(GithubFileLoader):
@@ -12,43 +13,52 @@ class Loader(GithubFileLoader):
     def lazy_load(self):
         files = self.get_file_paths()
         for file in files:
-            content = self.get_file_content_by_path(file["path"])
+            content, metadata = self.get_file_content_by_path(file["path"])
             if content == "":
                 continue
 
-            metadata = {
-                "path": file["path"],
-                "sha": file["sha"],
-                "source": f"{self.github_api_url}/{self.repo}/{file['type']}/"
-                f"{self.branch}/{file['path']}",
-            }
+            metadata.update(
+                {
+                    "sha": file["sha"],
+                    "url": f"{self.github_api_url}/{self.repo}/{file['type']}/"
+                    f"{self.branch}/{file['path']}",
+                }
+            )
             yield Document(page_content=content, metadata=metadata)
 
     def get_file_content_by_path(self, path: str) -> str:
 
         extension = None if not "." in path else path.split(".")[-1]
-        if not extension in ["py", "js", "php", "java", "md", "txt"]:
-            return ""
 
-        githube_auth = Auth.Token(Envs.GITHUB_TOKEN)
+        if "public/js" in path:
+            return "Not allowed file type", {"path": path}
+
+        if not extension in ["py", "js", "php", "java", "md", "txt"]:
+            return "Not allowed file type", {"path": path}
+
+        githube_auth = Auth.Token(self.access_token)
         github_conection = Github(auth=githube_auth)
         repo = github_conection.get_repo(
             Envs.REPOSITORY_OWNER + "/" + Envs.REPOSITORY_NAME
         )
 
         file_content = repo.get_contents(path)
+        github_metadata = {
+            "last_modified": file_content.last_modified,
+            "repository": file_content.repository.name,
+            "path": file_content.path,
+            "owner": file_content.repository.owner.login,
+        }
 
         if file_content is not None:
-            return file_content.decoded_content.decode()
+            content = file_content.decoded_content.decode()
 
-        return ""
+            return content, github_metadata
+
+        return "Not allowed file type", github_metadata
 
 
 class GitHubPI:
-    def __init__(self):
-
-        self.githube_auth = Auth.Token(Envs.GITHUB_TOKEN)
-        self.github_conection = Github(auth=self.githube_auth)
 
     def get_repository_contents(self, repo_name):
 

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import Optional
 from datetime import datetime
 
 
@@ -10,68 +10,92 @@ class CodeMetadata(BaseModel):
     """
 
     source: Optional[str] = Field(
-        None,
-        description="Source URL or location of the code (e.g., GitHub repository)",
-        default=None,
+        "unknown",
+        description="Source URL or location of the code (e.g., GitHub repository), if not provided set unknown",
     )
     category: Optional[str] = Field(
-        None,
-        description="Category of the code (e.g., algorithm, library, utility)",
+        description="Category of the code (e.g., algorithm, library, utility), if not provided set 'utility'",
         default="utility",
     )
     author: Optional[str] = Field(
-        None, description="Author of the code", default="Unknown"
+        "unknown",
+        description="Author of the code, if not provided set unknown ",
     )
-    created_at: Optional[datetime] = Field(
-        None,
-        description="Creation timestamp of the code",
-        default_factory=datetime.now,
+    created_at: Optional[str] = Field(
+        str(datetime.now()),
+        description="Creation timestamp of the code, in format 'YYYY-MM-DD HH:MM:SS' if not provided set unknown",
     )
-    updated_at: Optional[datetime] = Field(
-        None,
-        description="Last update timestamp of the code",
-        default_factory=datetime.now,
+    updated_at: Optional[str] = Field(
+        str(datetime.now()),
+        description="Last update timestamp of the code, in format 'YYYY-MM-DD HH:MM:SS' if not provided set unknown",
     )
     file_path: Optional[str] = Field(
-        None,
-        description="Path of the file within the repository (e.g., `src/module.py`)",
-        default="",
+        "unknown",
+        description="Path of the file within the repository (e.g., `src/module.py`), if not provided set unknown",
     )
-    class_names: Optional[List[str]] = Field(
-        [], description="List of class names in the code", default=[]
+    class_names: Optional[str] = Field(
+        "",
+        description="List of class names in the code, separated by commas, if not provided set unknown",
     )
-    function_names: Optional[List[str]] = Field(
-        [], description="List of function names in the code", default=[]
+    function_names: Optional[str] = Field(
+        "",
+        description="List of function names in the code, separated by commas, if not provided set unknown",
     )
     docstring: Optional[str] = Field(
-        None,
-        description="Docstring or summary for the code",
+        description="Docstring or summary for the code, if not provided set 'No docstring provided",
         default="No docstring provided",
     )
-    length: Optional[int] = Field(
-        0, description="Length of the code in lines or words", default=0
+    length: Optional[str] = Field(
+        "0",
+        description="Length of the code in lines or words, response only integer if not provided set to 0",
     )
-    relevance_score: Optional[float] = Field(
-        0.0,
-        description="Relevance score based on the code's content or context",
-        default=0.0,
+    relevance_score: Optional[str] = Field(
+        "0.0",
+        description="Relevance score based on the code's content or context, response only type float, if not provided set to 0.0",
     )
     language: Optional[str] = Field(
-        "Python", description="Programming language of the code", default="Python"
+        "Python",
+        description="Programming language of the code, if not provided set unknown",
     )
     status: Optional[str] = Field(
         "active",
-        description="Status of the code (e.g., active, deprecated)",
-        default="active",
+        description="Status of the code (e.g., active, deprecated), if not provided set unknown",
     )
     repository: Optional[str] = Field(
-        None, description="GitHub or repository name for the code", default=""
-    )
-    related_docs: Optional[List[str]] = Field(
-        [], description="IDs of related code documents for context", default=[]
-    )
-    context: Optional[str] = Field(
-        None,
-        description="Context or description of where this code fits in a larger project",
+        description="GitHub or repository name for the code, if not provided set unknown",
         default="",
     )
+    related_docs: Optional[str] = Field(
+        "",
+        description="IDs of related code documents for context, serparated by commas, if not provided set unknown",
+    )
+    context: Optional[str] = Field(
+        description="Context or description of where this code fits in a larger project, if not provided set unknown",
+        default="",
+    )
+
+    def to_dict(self):
+        return {
+            "function_names": self.normalize(self.function_names),
+            "docstring": self.normalize(self.docstring),
+            "length": self.normalize(self.length),
+            "relevance_score": self.normalize(self.relevance_score),
+            "language": self.normalize(self.language),
+            "status": self.normalize(self.status),
+            "repository": self.normalize(self.repository),
+            "related_docs": self.normalize(self.related_docs),
+            "context": self.normalize(self.context),
+            "file_path": self.normalize(self.file_path),
+            "context": self.normalize(self.context),
+            "class_names": self.normalize(self.class_names),
+            "author": self.normalize(self.author),
+            "updated_at": self.normalize(self.updated_at),
+            "created_at": self.normalize(self.created_at),
+            "category": self.normalize(self.category),
+            "source": self.normalize(self.source),
+        }
+
+    def normalize(self, value):
+        if value is None:
+            return "unknown"
+        return value

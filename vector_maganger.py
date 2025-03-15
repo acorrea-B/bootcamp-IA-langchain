@@ -10,9 +10,7 @@ def get_rag_to_code_explanation(retriever):
     system_prompt = (
         "You are an assistant for question-answering tasks. "
         "Use the following pieces of retrieved context to answer "
-        "the question. If you don't know the answer, say that you "
-        "don't know."
-        "answer concise."
+        "the question. If you don't know the answer, just response a empty string. "
         "\n\n"
         "{context}"
     )
